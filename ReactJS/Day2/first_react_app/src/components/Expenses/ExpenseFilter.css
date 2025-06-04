@@ -1,0 +1,16 @@
+/* ExpenseFilter.css */
+.expenses-filter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+
+.expenses-filter select {
+	font: inherit;
+	padding: 0.5rem;
+	border-radius: 6px;
+	border: 1px solid #ccc;
+	background-color: #fff;
+	color: #333;
+}
