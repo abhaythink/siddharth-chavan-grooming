@@ -1,6 +1,7 @@
 import ExpenseItem from "./ExpenseItem";
 import ExpenseFilter from "./ExpenseFilter";
-import Card from "./Card";
+import ExpenseChart from "./ExpensesChart";
+import Card from "../UI/Card";
 import { useState } from "react";
 
 function Expenses(props) {
@@ -28,9 +29,12 @@ function Expenses(props) {
 		setFilteredYear(event.target.value);
 	};
 
-	const visibleExpenses = props.items.filter((expense) => {
-		return expense.date.getFullYear().toString() !== filteredYear;
-	});
+	const visibleExpenses =
+		filteredYear === "All"
+			? props.items
+			: props.items.filter(
+					(expense) => expense.date.getFullYear().toString() === filteredYear
+			  );
 
 	return (
 		<Card>
