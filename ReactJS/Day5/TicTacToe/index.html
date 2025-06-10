@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Tic Tac Toe</title>
+		<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.5/babel.min.js"></script>
+		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body>
+		<div id="root"></div>
+		<script type="text/babel">
+			const { useState } = React;
+
+			// Simulate separate file: TicTacToe.module.css
+			const TicTacToeStyles = {
+				container: "tictactoe-container",
+			};
+
+			// Simulate separate file: SignSelection.module.css
+			const SignSelectionStyles = {
+				signSelection: "signselection-signSelection",
+			};
+
+			// Simulate separate file: Board.module.css
+			const BoardStyles = {
+				board: "board-board",
+			};
+
+			// Simulate separate file: Cell.module.css
+			const CellStyles = {
+				cell: "cell-cell",
+			};
+
+			// Simulate separate file: GameInfo.module.css
+			const GameInfoStyles = {
+				gameInfo: "gameinfo-gameInfo",
+				scoreTable: "gameinfo-scoreTable",
+			};
+
+			// Simulate separate file: Cell.jsx
+			const Cell = ({ value, onClick }) => {
+				return (
+					<div className={CellStyles.cell} onClick={onClick}>
+						{value}
+					</div>
+				);
+			};
+
+			// Simulate separate file: Board.jsx
+			const Board = ({ board, handleClick }) => {
+				return (
+					<div className={BoardStyles.board}>
+						{board.map((value, index) => (
+							<Cell
+								key={index}
+								value={value}
+								onClick={() => handleClick(index)}
+							/>
+						))}
+					</div>
+				);
+			};
+
+			// Simulate separate file: SignSelection.jsx
+			const SignSelection = ({ onSelectSign }) => {
+				const [player1Name, setPlayer1Name] = useState("");
+				const [player2Name, setPlayer2Name] = useState("");
+
+				const handleSignSelection = (sign) => {
+					onSelectSign(sign, player1Name, player2Name);
+				};
+
+				return (
+					<div className={`text-center ${SignSelectionStyles.signSelection}`}>
+						<h1 className="text-3xl font-bold mb-4">Tic Tac Toe</h1>
+						<div className="mb-4">
+							<label className="block text-lg mb-2">Player 1 Name:</label>
+							<input
+								type="text"
+								value={player1Name}
+								onChange={(e) => setPlayer1Name(e.target.value)}
+								placeholder="Enter Player 1 name"
+								className="px-4 py-2 border rounded"
+							/>
+						</div>
+						<div className="mb-4">
+							<label className="block text-lg mb-2">Player 2 Name:</label>
+							<input
+								type="text"
+								value={player2Name}
+								onChange={(e) => setPlayer2Name(e.target.value)}
+								placeholder="Enter Player 2 name"
+								className="px-4 py-2 border rounded"
+							/>
+						</div>
+						<p className="text-lg mb-4">Player 1, choose your sign:</p>
+						<div className="flex justify-center gap-4">
+							<button
+								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+								onClick={() => handleSignSelection("X")}
+							>
+								X
+							</button>
+							<button
+								className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+								onClick={() => handleSignSelection("O")}
+							>
+								O
+							</button>
+						</div>
+					</div>
+				);
+			};
+
+			// Simulate separate file: GameInfo.jsx
+			const GameInfo = ({
+				winner,
+				isXTurn,
+				player1Sign,
+				player2Sign,
+				player1Name,
+				player2Name,
+				scores,
+				onRestart,
+			}) => {
+				return (
+					<div className={`text-center mt-4 ${GameInfoStyles.gameInfo}`}>
+						{winner ? (
+							<p className="text-xl">
+								{winner === "Draw"
+									? "It's a Draw!"
+									: `Player ${
+											winner === player1Sign ? 1 : 2
+									  } (${winner}) Wins!`}
+							</p>
+						) : (
+							<p className="text-xl">
+								{isXTurn ? player1Name : player2Name}'s Turn (
+								{isXTurn ? player1Sign : player2Sign})
+							</p>
+						)}
+						<div className="mt-4">
+							<table className={GameInfoStyles.scoreTable}>
+								<thead>
+									<tr>
+										<th>{player1Name} (Player 1)</th>
+										<th>{player2Name} (Player 2)</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>{scores.player1}</td>
+										<td>{scores.player2}</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<button
+							className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+							onClick={onRestart}
+						>
+							Restart Game
+						</button>
+					</div>
+				);
+			};
+
+			// Simulate separate file: TicTacToe.jsx
+			const TicTacToe = () => {
+				const [board, setBoard] = useState(Array(9).fill(null));
+				const [isXTurn, setIsXTurn] = useState(true);
+				const [winner, setWinner] = useState(null);
+				const [player1Sign, setPlayer1Sign] = useState(null);
+				const [player2Sign, setPlayer2Sign] = useState(null);
+				const [player1Name, setPlayer1Name] = useState("");
+				const [player2Name, setPlayer2Name] = useState("");
+				const [gameStarted, setGameStarted] = useState(false);
+				const [scores, setScores] = useState({ player1: 0, player2: 0 });
+				const [showPopup, setShowPopup] = useState(false);
+
+				const winningCombinations = [
+					[0, 1, 2],
+					[3, 4, 5],
+					[6, 7, 8], // Rows
+					[0, 3, 6],
+					[1, 4, 7],
+					[2, 5, 8], // Columns
+					[0, 4, 8],
+					[2, 4, 6], // Diagonals
+				];
+
+				const checkWinner = (currentBoard) => {
+					for (let combination of winningCombinations) {
+						const [a, b, c] = combination;
+						if (
+							currentBoard[a] &&
+							currentBoard[a] === currentBoard[b] &&
+							currentBoard[a] === currentBoard[c]
+						) {
+							return currentBoard[a];
+						}
+					}
+					return currentBoard.includes(null) ? null : "Draw";
+				};
+
+				const handleClick = (index) => {
+					if (board[index] || winner || !gameStarted) return;
+
+					const newBoard = [...board];
+					const currentSign = isXTurn ? player1Sign : player2Sign;
+					newBoard[index] = currentSign;
+					setBoard(newBoard);
+					setIsXTurn(!isXTurn);
+
+					const gameResult = checkWinner(newBoard);
+					if (gameResult) {
+						setWinner(gameResult);
+						if (gameResult !== "Draw") {
+							setScores((prevScores) => ({
+								...prevScores,
+								[gameResult === player1Sign ? "player1" : "player2"]:
+									prevScores[
+										gameResult === player1Sign ? "player1" : "player2"
+									] + 1,
+							}));
+						}
+						setShowPopup(true);
+					}
+				};
+
+				const handleSignSelection = (sign, p1Name, p2Name) => {
+					setPlayer1Sign(sign);
+					setPlayer2Sign(sign === "X" ? "O" : "X");
+					setPlayer1Name(p1Name || "Player 1");
+					setPlayer2Name(p2Name || "Player 2");
+					setGameStarted(true);
+				};
+
+				const handleRestart = () => {
+					setBoard(Array(9).fill(null));
+					setIsXTurn(true);
+					setWinner(null);
+					setShowPopup(false);
+				};
+
+				const handleQuit = () => {
+					setBoard(Array(9).fill(null));
+					setIsXTurn(true);
+					setWinner(null);
+					setPlayer1Sign(null);
+					setPlayer2Sign(null);
+					setPlayer1Name("");
+					setPlayer2Name("");
+					setGameStarted(false);
+					setScores({ player1: 0, player2: 0 });
+					setShowPopup(false);
+				};
+
+				const closePopup = () => {
+					setShowPopup(false);
+				};
+
+				return (
+					<div
+						className={`flex flex-col items-center justify-center h-screen bg-gray-100 ${TicTacToeStyles.container}`}
+					>
+						{showPopup && (
+							<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+								<div className="bg-white p-6 rounded-lg shadow-lg text-center">
+									{winner === "Draw" ? (
+										<>
+											<h2 className="text-2xl font-bold mb-4">It's a Draw!</h2>
+											<p className="text-lg mb-4">No winner this time.</p>
+										</>
+									) : (
+										<>
+											<h2 className="text-2xl font-bold mb-4">
+												{winner === player1Sign ? player1Name : player2Name}{" "}
+												Wins!
+											</h2>
+											<p className="text-lg mb-4">Player 1: {player1Name}</p>
+										</>
+									)}
+									<div className="flex justify-center gap-4">
+										<button
+											className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+											onClick={handleRestart}
+										>
+											Restart
+										</button>
+										<button
+											className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+											onClick={handleQuit}
+										>
+											Quit
+										</button>
+									</div>
+								</div>
+							</div>
+						)}
+						{!gameStarted ? (
+							<SignSelection onSelectSign={handleSignSelection} />
+						) : (
+							<>
+								<h1 className="text-3xl font-bold mb-4">Tic Tac Toe</h1>
+								<Board board={board} handleClick={handleClick} />
+								<GameInfo
+									winner={winner}
+									isXTurn={isXTurn}
+									player1Sign={player1Sign}
+									player2Sign={player2Sign}
+									player1Name={player1Name}
+									player2Name={player2Name}
+									scores={scores}
+									onRestart={handleRestart}
+								/>
+							</>
+						)}
+					</div>
+				);
+			};
+
+			// Inline styles to simulate CSS modules
+			const styleSheet = document.createElement("style");
+			styleSheet.innerHTML = `
+            .${TicTacToeStyles.container} {
+                min-height: 100vh;
+            }
+            .${SignSelectionStyles.signSelection} {
+                padding: 20px;
+                background-color: #f9fafb;
+                border-radius: 8px;
+                width: 300px;
+                margin: 0 auto;
+            }
+            .${BoardStyles.board} {
+                display: grid;
+                grid-template-columns: repeat(3, 100px);
+                grid-gap: 5px;
+                justify-content: center;
+                margin: 20px auto;
+            }
+            .${CellStyles.cell} {
+                width: 100px;
+                height: 100px;
+                border: 2px solid #1e3a8a;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 60px;
+                cursor: pointer;
+                color: #1e3a8a;
+            }
+            .${CellStyles.cell}:hover {
+                background-color: #f0f0f0;
+            }
+            .${GameInfoStyles.gameInfo} {
+                padding: 15px;
+                background-color: #f9fafb;
+                border-radius: 8px;
+            }
+            .${GameInfoStyles.scoreTable} {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+                border-collapse: collapse;
+                border: 2px solid #1e3a8a;
+            }
+            .${GameInfoStyles.scoreTable} th, .${GameInfoStyles.scoreTable} td {
+                padding: 12px;
+                border: 2px solid #1e3a8a;
+                text-align: center;
+                font-size: 16px;
+                color: #1e3a8a;
+            }
+            .${GameInfoStyles.scoreTable} th {
+                background-color: #e5e7eb;
+                font-weight: bold;
+            }
+            .${GameInfoStyles.scoreTable} td {
+                background-color: #ffffff;
+                font-weight: normal;
+            }
+        `;
+			document.head.appendChild(styleSheet);
+
+			const root = ReactDOM.createRoot(document.getElementById("root"));
+			root.render(<TicTacToe />);
+		</script>
+	</body>
+</html>
